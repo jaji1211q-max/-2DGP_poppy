@@ -11,4 +11,4 @@ python -m pip install -r requirements.txt
 python main.py
 ```
 
-`poppy.png`는 Poppy 스프라이트 시트입니다. 게임 창에서 방향키 또는 WASD로 이동하고, `Esc` 키로 종료할 수 있습니다.
+`poppy.png`는 Poppy 스프라이트 시트입니다. 게임 창에서 방향키 또는 WASD로 이동하면 스프라이트 시트의 두 번째 줄 걷기 애니메이션이 재생되고, 멈추면 첫 프레임으로 돌아옵니다. `Esc` 키로 종료할 수 있습니다.
