@@ -11,7 +11,16 @@ from pico2d import (
     SDLK_UP,
 )
 
-from poppy import FRAME_BOTTOM, FRAME_HEIGHT, FRAME_LEFT, FRAME_WIDTH, Poppy
+from poppy import (
+    ANIMATION_FRAME_DURATION,
+    FRAME_BOTTOM,
+    FRAME_HEIGHT,
+    FRAME_LEFT,
+    FRAME_STEP,
+    FRAME_WIDTH,
+    WALK_FRAME_COUNT,
+    Poppy,
+)
 
 
 class PoppyTests(unittest.TestCase):
@@ -84,6 +93,37 @@ class PoppyTests(unittest.TestCase):
             FRAME_WIDTH,
             FRAME_HEIGHT,
         )
+
+    def test_walk_animation_advances_when_moving(self):
+        self.press(SDLK_RIGHT)
+        self.poppy.update(ANIMATION_FRAME_DURATION)
+        self.poppy.draw()
+
+        self.image.clip_draw.assert_called_once_with(
+            FRAME_LEFT + FRAME_STEP,
+            FRAME_BOTTOM,
+            FRAME_WIDTH,
+            FRAME_HEIGHT,
+            self.poppy.x,
+            self.poppy.y,
+            FRAME_WIDTH,
+            FRAME_HEIGHT,
+        )
+
+    def test_walk_animation_wraps_after_all_frames(self):
+        self.press(SDLK_RIGHT)
+        for _ in range(WALK_FRAME_COUNT):
+            self.poppy.update(ANIMATION_FRAME_DURATION)
+
+        self.assertEqual(self.poppy.frame_index, 0)
+
+    def test_walk_animation_resets_when_movement_stops(self):
+        self.press(SDLK_RIGHT)
+        self.poppy.update(ANIMATION_FRAME_DURATION)
+        self.release(SDLK_RIGHT)
+        self.poppy.update(ANIMATION_FRAME_DURATION)
+
+        self.assertEqual(self.poppy.frame_index, 0)
 
 
 if __name__ == "__main__":

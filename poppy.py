@@ -19,6 +19,8 @@ from pico2d import (
 CANVAS_WIDTH = 800
 CANVAS_HEIGHT = 600
 MOVEMENT_SPEED = 300.0
+ANIMATION_FRAME_DURATION = 0.1
+WALK_FRAME_COUNT = 8
 FRAME_LEFT = 96
 FRAME_BOTTOM = 688
 FRAME_WIDTH = 96
@@ -33,6 +35,8 @@ class Poppy:
         self.x = CANVAS_WIDTH / 2
         self.y = CANVAS_HEIGHT / 2
         self.pressed_keys = set()
+        self.animation_elapsed = 0.0
+        self.frame_index = 0
 
     def handle_event(self, event):
         if event.type == SDL_KEYDOWN:
@@ -53,6 +57,8 @@ class Poppy:
 
         direction_length = hypot(horizontal, vertical)
         if direction_length == 0:
+            self.animation_elapsed = 0.0
+            self.frame_index = 0
             return
 
         distance = MOVEMENT_SPEED * delta_time / direction_length
@@ -67,9 +73,20 @@ class Poppy:
             CANVAS_HEIGHT - half_height,
         )
 
+        self.animation_elapsed += delta_time
+        frames_elapsed = int(
+            (self.animation_elapsed + 1e-9) / ANIMATION_FRAME_DURATION
+        )
+        if frames_elapsed:
+            self.frame_index = (self.frame_index + frames_elapsed) % WALK_FRAME_COUNT
+            self.animation_elapsed = max(
+                0.0,
+                self.animation_elapsed - frames_elapsed * ANIMATION_FRAME_DURATION,
+            )
+
     def draw(self):
         self.image.clip_draw(
-            FRAME_LEFT,
+            FRAME_LEFT + self.frame_index * FRAME_STEP,
             FRAME_BOTTOM,
             FRAME_WIDTH,
             FRAME_HEIGHT,
