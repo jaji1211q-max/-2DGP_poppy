@@ -1,10 +1,12 @@
 import unittest
+from math import atan2, pi
 from types import SimpleNamespace
 from unittest.mock import patch
 
 from pico2d import (
     SDL_KEYDOWN,
     SDL_KEYUP,
+    SDL_MOUSEMOTION,
     SDLK_d,
     SDLK_LEFT,
     SDLK_RIGHT,
@@ -34,6 +36,11 @@ class PoppyTests(unittest.TestCase):
 
     def release(self, key):
         self.poppy.handle_event(SimpleNamespace(type=SDL_KEYUP, key=key))
+
+    def move_mouse(self, x, y):
+        self.poppy.handle_event(
+            SimpleNamespace(type=SDL_MOUSEMOTION, x=x, y=y)
+        )
 
     def test_moves_at_a_consistent_speed(self):
         self.press(SDLK_RIGHT)
@@ -79,6 +86,32 @@ class PoppyTests(unittest.TestCase):
     def test_negative_delta_time_is_rejected(self):
         with self.assertRaises(ValueError):
             self.poppy.update(-0.1)
+
+    def test_mouse_to_the_right_rotates_poppy_toward_the_pointer(self):
+        self.move_mouse(600, 300)
+
+        self.assertAlmostEqual(self.poppy.rotation_angle, pi / 2)
+
+    def test_mouse_screen_y_is_converted_to_canvas_coordinates(self):
+        self.move_mouse(400, 100)
+
+        self.assertAlmostEqual(self.poppy.rotation_angle, pi)
+
+    def test_rotation_tracks_a_stationary_pointer_as_poppy_moves(self):
+        self.move_mouse(600, 300)
+        self.press(SDLK_UP)
+        self.poppy.update(0.1)
+
+        self.assertAlmostEqual(
+            self.poppy.rotation_angle,
+            atan2(-30, 200) + pi / 2,
+        )
+
+    def test_pointer_at_poppy_position_keeps_the_previous_rotation(self):
+        self.move_mouse(600, 300)
+        self.move_mouse(400, 300)
+
+        self.assertAlmostEqual(self.poppy.rotation_angle, pi / 2)
 
     def test_draw_uses_the_first_frame_of_the_second_sprite_row(self):
         self.poppy.draw()

@@ -1,9 +1,10 @@
-from math import hypot
+from math import atan2, hypot, pi
 from pathlib import Path
 
 from pico2d import (
     SDL_KEYDOWN,
     SDL_KEYUP,
+    SDL_MOUSEMOTION,
     SDLK_a,
     SDLK_d,
     SDLK_DOWN,
@@ -37,12 +38,30 @@ class Poppy:
         self.pressed_keys = set()
         self.animation_elapsed = 0.0
         self.frame_index = 0
+        self.mouse_x = None
+        self.mouse_y = None
+        self.rotation_angle = 0.0
 
     def handle_event(self, event):
         if event.type == SDL_KEYDOWN:
             self.pressed_keys.add(event.key)
         elif event.type == SDL_KEYUP:
             self.pressed_keys.discard(event.key)
+        elif event.type == SDL_MOUSEMOTION:
+            self.mouse_x = event.x
+            self.mouse_y = CANVAS_HEIGHT - event.y
+            self._update_rotation()
+
+    def _update_rotation(self):
+        if self.mouse_x is None or self.mouse_y is None:
+            return
+
+        direction_x = self.mouse_x - self.x
+        direction_y = self.mouse_y - self.y
+        if direction_x == 0 and direction_y == 0:
+            return
+
+        self.rotation_angle = atan2(direction_y, direction_x) + pi / 2
 
     def update(self, delta_time):
         if delta_time < 0:
@@ -59,6 +78,7 @@ class Poppy:
         if direction_length == 0:
             self.animation_elapsed = 0.0
             self.frame_index = 0
+            self._update_rotation()
             return
 
         distance = MOVEMENT_SPEED * delta_time / direction_length
@@ -83,6 +103,8 @@ class Poppy:
                 0.0,
                 self.animation_elapsed - frames_elapsed * ANIMATION_FRAME_DURATION,
             )
+
+        self._update_rotation()
 
     def draw(self):
         self.image.clip_draw(
