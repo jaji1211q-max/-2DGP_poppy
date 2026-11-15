@@ -107,11 +107,13 @@ class Poppy:
         self._update_rotation()
 
     def draw(self):
-        self.image.clip_draw(
+        self.image.clip_composite_draw(
             FRAME_LEFT + self.frame_index * FRAME_STEP,
             FRAME_BOTTOM,
             FRAME_WIDTH,
             FRAME_HEIGHT,
+            self.rotation_angle,
+            "",
             self.x,
             self.y,
             FRAME_WIDTH,

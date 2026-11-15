@@ -116,11 +116,13 @@ class PoppyTests(unittest.TestCase):
     def test_draw_uses_the_first_frame_of_the_second_sprite_row(self):
         self.poppy.draw()
 
-        self.image.clip_draw.assert_called_once_with(
+        self.image.clip_composite_draw.assert_called_once_with(
             FRAME_LEFT,
             FRAME_BOTTOM,
             FRAME_WIDTH,
             FRAME_HEIGHT,
+            0.0,
+            "",
             400.0,
             300.0,
             FRAME_WIDTH,
@@ -132,13 +134,32 @@ class PoppyTests(unittest.TestCase):
         self.poppy.update(ANIMATION_FRAME_DURATION)
         self.poppy.draw()
 
-        self.image.clip_draw.assert_called_once_with(
+        self.image.clip_composite_draw.assert_called_once_with(
             FRAME_LEFT + FRAME_STEP,
             FRAME_BOTTOM,
             FRAME_WIDTH,
             FRAME_HEIGHT,
+            0.0,
+            "",
             self.poppy.x,
             self.poppy.y,
+            FRAME_WIDTH,
+            FRAME_HEIGHT,
+        )
+
+    def test_draw_uses_the_mouse_facing_angle(self):
+        self.move_mouse(600, 300)
+        self.poppy.draw()
+
+        self.image.clip_composite_draw.assert_called_once_with(
+            FRAME_LEFT,
+            FRAME_BOTTOM,
+            FRAME_WIDTH,
+            FRAME_HEIGHT,
+            pi / 2,
+            "",
+            400.0,
+            300.0,
             FRAME_WIDTH,
             FRAME_HEIGHT,
         )
