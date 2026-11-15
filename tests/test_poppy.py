@@ -71,7 +71,7 @@ class PoppyTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.poppy.update(-0.1)
 
-    def test_draw_uses_the_first_sprite_frame(self):
+    def test_draw_uses_the_first_frame_of_the_second_sprite_row(self):
         self.poppy.draw()
 
         self.image.clip_draw.assert_called_once_with(
