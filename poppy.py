@@ -1,0 +1,79 @@
+from math import hypot
+from pathlib import Path
+
+from pico2d import (
+    SDL_KEYDOWN,
+    SDL_KEYUP,
+    SDLK_a,
+    SDLK_d,
+    SDLK_DOWN,
+    SDLK_LEFT,
+    SDLK_RIGHT,
+    SDLK_s,
+    SDLK_UP,
+    SDLK_w,
+    load_image,
+)
+
+
+CANVAS_WIDTH = 800
+CANVAS_HEIGHT = 600
+MOVEMENT_SPEED = 300.0
+FRAME_LEFT = 96
+FRAME_BOTTOM = 854
+FRAME_WIDTH = 96
+FRAME_HEIGHT = 170
+
+
+class Poppy:
+    def __init__(self):
+        image_path = Path(__file__).resolve().with_name("poppy.png")
+        self.image = load_image(str(image_path))
+        self.x = CANVAS_WIDTH / 2
+        self.y = CANVAS_HEIGHT / 2
+        self.pressed_keys = set()
+
+    def handle_event(self, event):
+        if event.type == SDL_KEYDOWN:
+            self.pressed_keys.add(event.key)
+        elif event.type == SDL_KEYUP:
+            self.pressed_keys.discard(event.key)
+
+    def update(self, delta_time):
+        if delta_time < 0:
+            raise ValueError("delta_time must not be negative")
+
+        horizontal = int(
+            SDLK_RIGHT in self.pressed_keys or SDLK_d in self.pressed_keys
+        ) - int(SDLK_LEFT in self.pressed_keys or SDLK_a in self.pressed_keys)
+        vertical = int(
+            SDLK_UP in self.pressed_keys or SDLK_w in self.pressed_keys
+        ) - int(SDLK_DOWN in self.pressed_keys or SDLK_s in self.pressed_keys)
+
+        direction_length = hypot(horizontal, vertical)
+        if direction_length == 0:
+            return
+
+        distance = MOVEMENT_SPEED * delta_time / direction_length
+        half_width = FRAME_WIDTH / 2
+        half_height = FRAME_HEIGHT / 2
+        self.x = min(
+            max(self.x + horizontal * distance, half_width),
+            CANVAS_WIDTH - half_width,
+        )
+        self.y = min(
+            max(self.y + vertical * distance, half_height),
+            CANVAS_HEIGHT - half_height,
+        )
+
+    def draw(self):
+        self.image.clip_draw(
+            FRAME_LEFT,
+            FRAME_BOTTOM,
+            FRAME_WIDTH,
+            FRAME_HEIGHT,
+            self.x,
+            self.y,
+            FRAME_WIDTH,
+            FRAME_HEIGHT,
+        )
