@@ -28,4 +28,3 @@ class GameWorld:
         if self.poppy is None:
             raise RuntimeError("GameWorld must be initialized before use.")
         return self.poppy
-
